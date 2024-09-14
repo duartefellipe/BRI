@@ -11,7 +11,8 @@ if __name__ == '__main__':
 	
 	search_time=[]
 	for (qi_pos, qi) in enumerate(queries):
-		qi_time = search(qi,spa_queue)
+		qi_time, search_results = search(qi,spa_queue)
 		search_time.append(qi_time)
+		print("q%d results: "%(qi_pos), search_results)
 	
 	print("Tempo total: %2.5f, Tempo medio: %2.5f para buscar %d."%(sum(queries_time+search_time),(sum(queries_time)+sum(search_time))/len(queries),len(queries)))

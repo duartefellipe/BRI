@@ -23,8 +23,10 @@ def folder_reader(folder_to_read, encoding = "ISO-8859-1"):
 
 def search(query_to_search, data_queue):
 	start_time = time.time()
+	search_results = []
 
 	for (posi, di) in enumerate(data_queue):
 		if di == query_to_search:
+			search_results.append(di)
 			print("achou!")							
-	return  time.time() - start_time
+	return  (time.time() - start_time, search_results)
