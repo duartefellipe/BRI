@@ -13,10 +13,18 @@ def folder_reader(folder_to_read, encoding = "ISO-8859-1"):
 	queue_to_append = []
 	for fnamei in filenames:
 		fpathi = "/".join([folder_to_read,fnamei])
-		print(fpathi)
+#		print(fpathi)
 		start_time = time.time()
 		queue_to_append.append(file_reader(fpathi, encoding))
 		read_time.append(time.time() - start_time)
 													
 													
 	return (read_time, queue_to_append)
+
+def search(query_to_search, data_queue):
+	start_time = time.time()
+
+	for (posi, di) in enumerate(data_queue):
+		if di == query_to_search:
+			print("achou!")							
+	return  time.time() - start_time
