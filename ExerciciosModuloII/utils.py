@@ -30,3 +30,15 @@ def search(query_to_search, data_queue):
 			search_results.append(di)
 			print("achou!")							
 	return  (time.time() - start_time, search_results)
+
+
+def search_by_word(query_to_search, data_queue):
+	start_time = time.time()
+	search_results = set()
+
+	for (posi, di) in enumerate(data_queue):
+		tokens = query_to_search.split(" ")
+		for tki in tokens:
+			if tki in query_to_search:
+				search_results.add(di)							
+	return  (time.time() - start_time, search_results)
