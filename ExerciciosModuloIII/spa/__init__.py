@@ -2,7 +2,9 @@ import time
 from utils import folder_reader, lookup
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
-_dataset_path = "../../../datasets/spa/corpus-20090418"
+#_dataset_path = "../../../datasets/spa/corpus-20090418"
+_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/short plagiarised answers corpus/corpus-20090418"
+
 _queue = []
 
 '''

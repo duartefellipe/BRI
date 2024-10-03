@@ -3,7 +3,9 @@ import time
 from utils import file_reader, lookup
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
-_dataset_path = "../../../datasets/cranfield"
+#_dataset_path = "../../../datasets/cranfield"
+_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/cranfield"
+
 _queue = []
 
 '''

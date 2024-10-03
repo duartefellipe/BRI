@@ -1,5 +1,6 @@
 import os
 import time 
+import re
 
 '''
 	colocar aqui os metodos e variaveis utilitarias
@@ -14,29 +15,61 @@ def folder_reader(folder_to_read, encoding = "ISO-8859-1"):
 	queue_to_append = []
 	for fnamei in filenames:
 		fpathi = "/".join([folder_to_read,fnamei])
-#		print(fpathi)
+		
 		start_time = time.time()
 		queue_to_append.append(file_reader(fpathi, encoding))
 		read_time.append(time.time() - start_time)
 	return (read_time, queue_to_append)
-
-
-def word_tokenizer(str_to_tokenize):
-	return str_to_tokenize.split(" ")
-
-
-
+	
 def lookup(what_look, where_look):
 	start_time = time.time()
 	search_results = []
 
 	for (posi, di) in enumerate(where_look):
-		if what_look in di:
+		if len(set(what_look) & set(di))  == len(set(what_look) ):
 			search_results.append(posi)
-	return  (time.time() - start_time, search_results)
 
-def default_subquery_extractor(query):
-	return query
+	return  (time.time() - start_time, search_results)
 
 def default_query_expansion(query):
 	return query
+
+_STOPLIST = {"the", "a", "an", "is", "of", "with", "and", "or", "to", "it", "in", "at", "as", "on", "by", "be", "any", "not", "also"}
+_RG_SPACES  = "\s+"
+_RG_PUNCTUATION  = "[,\\.!\\?]"
+_RG__NUMBER  =  " [0-9]+([\.,][0-9]+)*"
+_RG__SPECIALCHAR =  "[^\w\s]"
+
+def regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist):
+	if to_lowercase:
+		str_to_tokenize = str_to_tokenize.lower()
+	
+	str_to_tokenize = re.sub(clean_pattern, "",  str_to_tokenize).strip()
+	str_tokens = set(re.split(token_pattern,str_to_tokenize))
+	str_tokens = str_tokens - stoplist	
+	
+	return list(str_tokens)
+	
+def tokenizerFactory( token_pattern= _RG_SPACES, to_lowercase=False, clean_pattern= "", stoplist = set()):
+	def new_tokenizer(str_to_tokenize):
+		return regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist)		
+	return new_tokenizer
+
+word_tokenizer = tokenizerFactory( _RG_SPACES)
+
+
+def subquery_extractor(query, ngram_range=1):
+	sub_queries = []
+	for i in range(0,len(query),ngram_range):
+		sub_queries.append(query[i:i+ngram_range])
+		
+	return sub_queries
+
+def subquery_factory(ngram_range=1):
+	def new_subquery_extractor(query):
+		return subquery_extractor(query, ngram_range)
+				
+	return new_subquery_extractor
+
+default_subquery_extractor = subquery_factory()
+
