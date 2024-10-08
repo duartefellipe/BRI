@@ -2,7 +2,8 @@ from utils import  search, search_by_word, folder_reader, query_reader
 import os
 
 if __name__ == '__main__':
-	dataset_path = "../../../datasets/cf/cfc-xml"
+	dataset_path = "../../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/Cystic Fibrosis/cfc-xml"
+
 	index_time, cf_queue = folder_reader(dataset_path)
 	print("Tempo total: %2.5f, Tempo medio: %2.5f de %d docs armazenados "%(sum(index_time),sum(index_time)/len(cf_queue), len(cf_queue)))
 

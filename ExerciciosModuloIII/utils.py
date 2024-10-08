@@ -40,19 +40,20 @@ _RG_PUNCTUATION  = "[,\\.!\\?]"
 _RG__NUMBER  =  " [0-9]+([\.,][0-9]+)*"
 _RG__SPECIALCHAR =  "[^\w\s]"
 
-def regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist):
+def regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist, stemmer):
 	if to_lowercase:
 		str_to_tokenize = str_to_tokenize.lower()
 	
 	str_to_tokenize = re.sub(clean_pattern, "",  str_to_tokenize).strip()
 	str_tokens = set(re.split(token_pattern,str_to_tokenize))
 	str_tokens = str_tokens - stoplist	
-	
+	if stemmer != None:
+		str_tokens = list(map(stemmer.stem,str_tokens))
 	return list(str_tokens)
 	
-def tokenizerFactory( token_pattern= _RG_SPACES, to_lowercase=False, clean_pattern= "", stoplist = set()):
+def tokenizerFactory( token_pattern= _RG_SPACES, to_lowercase=False, clean_pattern= "", stoplist = set(),stemmer = None):
 	def new_tokenizer(str_to_tokenize):
-		return regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist)		
+		return regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern, stoplist, stemmer)		
 	return new_tokenizer
 
 word_tokenizer = tokenizerFactory( _RG_SPACES)

@@ -1,6 +1,10 @@
 import time
 import spa, cranfield, cf
 import utils
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.lancaster import LancasterStemmer
+
 if __name__ == '__main__':
 	tokenizer_list = [
 			utils.word_tokenizer, #tokenizando pelo espaco 
@@ -8,6 +12,10 @@ if __name__ == '__main__':
 			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula
 			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True, utils._RG__SPECIALCHAR+"|"+utils._RG__NUMBER), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula; removendo numeros e caracteres especiais
 			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True, utils._RG__SPECIALCHAR+"|"+utils._RG__NUMBER, utils._STOPLIST), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula; removendo numeros, caracteres especiais e uma pequena lista de stopwords
+			
+			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True, utils._RG__SPECIALCHAR+"|"+utils._RG__NUMBER, utils._STOPLIST,stemmer=PorterStemmer()), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula; removendo numeros, caracteres especiais e uma pequena lista de stopwords
+			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True, utils._RG__SPECIALCHAR+"|"+utils._RG__NUMBER, utils._STOPLIST,stemmer=SnowballStemmer("english")), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula; removendo numeros, caracteres especiais e uma pequena lista de stopwords
+			utils.tokenizerFactory( utils._RG_SPACES +"|"+utils._RG_PUNCTUATION, True, utils._RG__SPECIALCHAR+"|"+utils._RG__NUMBER, utils._STOPLIST,stemmer= LancasterStemmer()), #tokenizando pelo espaco e pela pontuação; colocando tudo em letra minuscula; removendo numeros, caracteres especiais e uma pequena lista de stopwords
 			]	
 	for datasrc in [spa,
 	cranfield,
