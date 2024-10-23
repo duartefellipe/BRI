@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	cf
 	]:
 		for tokenizeri in tokenizer_list:
-			print('-'*20)
+			print('-'*25)
 			print("Colecao:", datasrc.__name__)
 			_, D = datasrc.read_documents()
 			_, Q = datasrc.read_queries()
