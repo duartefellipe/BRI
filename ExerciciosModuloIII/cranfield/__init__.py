@@ -1,12 +1,19 @@
-import re
-import time 
+import re, time 
+import numpy as np
+from io import StringIO   
 from utils import file_reader, lookup
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
 #_dataset_path = "../../../datasets/cranfield"
-_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/cranfield"
-
+#_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/cranfield"
+_dataset_path = "D:/Colecoes de Dados/Common IR collections/cranfield"
 _queue = []
+
+'''
+	mapeia para cada q quais documentos são esperados como resultado (i.e. a resposta correta de cada consulta)
+	indice query => id do documento relevantes em _queue
+'''
+_golden_standard = []
 
 '''
 	indexing 
@@ -22,6 +29,12 @@ def cran_reader(file_to_read, encoding = "ISO-8859-1"):
 
 
 def read_documents():
+	for i,j,k in  np.loadtxt("/".join([_dataset_path,"cranqrel"]) ,delimiter=" ", dtype=int):
+		if k > 0:
+			if i > len(_golden_standard):
+				_golden_standard.append([])
+			_golden_standard[i-1].append(j-1)
+	
 	index_time, _queue = cran_reader("/".join([_dataset_path,"cran.all.1400"]))
 	return index_time, _queue
 

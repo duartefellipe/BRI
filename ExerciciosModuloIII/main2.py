@@ -6,6 +6,7 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.probability import FreqDist
 import matplotlib.pyplot as plt
+import numpy as np
 
 if __name__ == '__main__':
 	tokenizer_list = [
@@ -51,3 +52,13 @@ if __name__ == '__main__':
 			
 			plt.legend(plots, labels, loc=1)
 			plt.show()
+	
+		relevants_count = [len(i) for i in datasrc._golden_standard]
+		print(">>>Media relevantes/consulta: %2.0f"%(np.mean(relevants_count)))
+		
+		plt.scatter(range(0,len(datasrc._golden_standard)), relevants_count, marker='.')
+		plt.title("Número de relevantes x consultas no corpus %s"%(datasrc.__name__))
+		plt.ylabel("numero de relevantes")
+		plt.xlabel("id da consulta")
+# 		plt.ylim=(0,5)
+		plt.show()

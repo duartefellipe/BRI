@@ -31,6 +31,30 @@ def lookup(what_look, where_look):
 
 	return  (time.time() - start_time, search_results)
 
+
+def eval_result(query_results, _golden_standard, metric_name):
+	results_eval = []
+	for q_id, q_res in enumerate(query_results):
+		a = set(q_res)
+		b = set(_golden_standard[q_id])
+		a_b = a.intersection(b)
+		
+		try:
+			if metric_name == "precision":
+				results_eval.append(len(a_b)/len(a))
+			else:
+				results_eval.append(len(a_b)/len(b))
+		except ZeroDivisionError as e:
+			results_eval.append(0)
+						
+	return results_eval
+
+def eval_precision(query_results, _golden_standard):
+	return eval_result(query_results, _golden_standard, "precision")
+
+def eval_recall(query_results, _golden_standard):
+	return eval_result(query_results, _golden_standard, "recall")
+
 def default_query_expansion(query):
 	return query
 

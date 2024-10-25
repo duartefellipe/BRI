@@ -3,16 +3,29 @@ from utils import file_reader, lookup
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
 #_dataset_path = "../../../datasets/cf/cfc-xml"
-_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/Cystic Fibrosis/cfc-xml"
-
+#_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/Common IR collections/Cystic Fibrosis/cfc-xml"
+_dataset_path = "D:/Colecoes de Dados/Common IR collections/Cystic Fibrosis/cfc-xml"
 _queue = []
+
+'''
+	mapeia o RECORDNUM de cada documento para o indice do seu texto em _queue
+	RECORDNUM => inteiro
+'''
+_rn_to_queue = {}
+
+'''
+	mapeia para cada q quais documentos são esperados como resultado (i.e. a resposta correta de cada consulta)
+	indice query => id do documento relevantes em _queue
+'''
+_golden_standard = []
+
 
 '''
 	indexing 
 '''
 
 def extract_tag_content(tag_name, xml_content):
-		xml_pattern = "(<"+tag_name+">.*?<\\/"+tag_name+">)"		
+		xml_pattern = "<"+tag_name+">(.*?)<\\/"+tag_name+">"	
 		return re.findall(xml_pattern,xml_content, flags = re.DOTALL)
 
 def cf_reader(file_to_read, encoding = "ISO-8859-1"):
@@ -22,14 +35,17 @@ def cf_reader(file_to_read, encoding = "ISO-8859-1"):
 	
 	xml_content = file_reader(file_to_read, encoding)
 	for ri in extract_tag_content("RECORD", xml_content):
-			try:
-				title = extract_tag_content("TITLE", ri)
-				abstract = extract_tag_content("ABSTRACT", ri)
-				if len(abstract) == 0:
-					abstract = extract_tag_content("EXTRACT", ri)
-				queue_to_append.append(title[0]+abstract[0])
-			except:
-				pass	
+		try:	
+			record_number =  int(re.findall(r'\d+', extract_tag_content("RECORDNUM", ri)[0])[0])
+		except:
+			continue
+		_rn_to_queue[record_number] = len(queue_to_append)			
+		title = extract_tag_content("TITLE", ri)
+		abstract = extract_tag_content("ABSTRACT", ri)
+		if len(abstract) == 0:
+			abstract = extract_tag_content("EXTRACT", ri)
+		queue_to_append.append(title[0]+abstract[0])
+
 	read_time.append(time.time() - start_time)
 	return (read_time, queue_to_append)
 
@@ -67,9 +83,19 @@ def _index(to_index):
 	searching
 '''
 def read_queries():
-		start_time = time.time()	
-		xml_content = file_reader(os.path.join(_dataset_path,"cfquery-corrigido.xml"), "ISO-8859-1")
-		return (time.time() - start_time, extract_tag_content("QueryText", xml_content))
+	global _golden_standard
+	_golden_standard = []
+	
+	start_time = time.time()	
+	xml_content = file_reader(os.path.join(_dataset_path,"cfquery-corrigido.xml"), "ISO-8859-1")
+		
+	queries_text = extract_tag_content("QueryText", xml_content)
+	queries_records = extract_tag_content("Records", xml_content)
+		
+	for qri in queries_records:
+		_golden_standard.append([_rn_to_queue[int(s)] for s in re.findall(r'>(\b\d+\b)<', qri)])
+		
+	return (time.time() - start_time, queries_text)
 	
 def extract_query(to_extract,sq_extractor=default_subquery_extractor, q_expansion = default_query_expansion):
 	start_time = time.time()	

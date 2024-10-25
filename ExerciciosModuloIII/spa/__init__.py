@@ -1,17 +1,32 @@
-import time 
+import time, os, re 
 from utils import folder_reader, lookup
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
 #_dataset_path = "../../../datasets/spa/corpus-20090418"
-_dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/short plagiarised answers corpus/corpus-20090418"
+# _dataset_path = "../../../Dropbox/Arquivos BRI/Datasets/short plagiarised answers corpus/corpus-20090418"
+_dataset_path = "D:/Colecoes de Dados/short plagiarised answers corpus/corpus-20090418"
 
 _queue = []
+
+'''
+	mapeia o nome da tarefa de cada documento para o indice do seu texto em _queue
+'''
+_tn_to_queue = []
+
+'''
+	mapeia para cada q quais documentos são esperados como resultado (i.e. a resposta correta de cada consulta)
+	indice query => id do documento relevantes em _queue
+'''
+_golden_standard = []
 
 '''
 	indexing 
 '''
 def read_documents():
-	index_time, _queue = folder_reader("/".join([_dataset_path,"source", ]))
+	global _tn_to_queue
+	folder_to_read  = "/".join([_dataset_path,"source", ])
+	_tn_to_queue = os.listdir(folder_to_read)
+	index_time, _queue = folder_reader(folder_to_read)
 	return index_time, _queue
 
 def preprocess(to_prep, _tokenizer = word_tokenizer):
@@ -32,7 +47,15 @@ def _index(to_index):
 	searching
 '''
 def read_queries():
-	return folder_reader("/".join([_dataset_path,"light", ]))	
+	global _golden_standard
+	_golden_standard = []
+	folder_to_read = "/".join([_dataset_path,"light", ])
+	
+	for qpos, q in enumerate(os.listdir(folder_to_read)):
+		q_src_id = _tn_to_queue.index(re.sub("(g.*)_", "orig_",q))
+		_golden_standard.append([q_src_id])
+	
+	return folder_reader(folder_to_read)	
 	
 def extract_query(to_extract,sq_extractor=default_subquery_extractor, q_expansion = default_query_expansion):
 	start_time = time.time()	
