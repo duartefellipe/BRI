@@ -1,6 +1,8 @@
 import os
 import time 
 import re
+from nltk.probability import FreqDist
+import numpy as np
 
 '''
 	colocar aqui os metodos e variaveis utilitarias
@@ -21,15 +23,62 @@ def folder_reader(folder_to_read, encoding = "ISO-8859-1"):
 		read_time.append(time.time() - start_time)
 	return (read_time, queue_to_append)
 	
-def lookup(what_look, where_look):
+def lookup(what_look, where_look, how_look):
 	start_time = time.time()
 	search_results = []
 
 	for (posi, di) in enumerate(where_look):
-		if len(set(what_look) & set(di))  == len(set(what_look) ):
-			search_results.append(posi)
-
+		if how_look == "boolean":
+			if len(set(what_look) & set(di))  == len(set(what_look) ):
+				search_results.append(posi)
+		elif how_look == "VSM":
+			if len(set(what_look) & set(di))  > 0 :
+				search_results.append(posi)
+		else:
+			raise NotImplementedError
+				
 	return  (time.time() - start_time, search_results)
+
+def jaccard_sim(set_a, set_b):
+	return len(set_a & set_b)/(len(set_a) + len(set_b)-len(set_a & set_b))
+
+def cossine_sim(v1, v2):
+	v1_fd = FreqDist(v1)
+	v2_fd = FreqDist(v2)
+	
+	v1_v2_sim = 0
+	for v1_token, tk_weight in v1_fd.items():
+		v1_v2_sim += tk_weight*v2_fd[v1_token]
+				
+	v1_v2_sim /= (v1_fd.N() * v2_fd.N()) 
+	
+	return v1_v2_sim
+
+
+def retrieve_top_k(query, to_rank, ir_model, k, _queue):
+	scores = []
+	if k == None:
+		k = len(_queue)
+	
+	start_time = time.time()	
+	if ir_model == "boolean":
+		q = set(query)
+		for i in to_rank:
+			di = set(_queue[i])
+			scores.append(jaccard_sim(q,di))
+	elif ir_model == "VSM":
+		for i in to_rank:
+			scores.append(cossine_sim(query, _queue[i]))
+	else:
+		raise NotImplementedError
+
+	scores = np.array(scores)
+	scores_order = (np.argsort(scores)[::-1])
+	
+	sorted_results = (np.array(to_rank)[scores_order])
+	
+# 	print(k,sorted_results.tolist()[0:k])
+	return time.time() - start_time, sorted_results.tolist()[0:k]
 
 
 def eval_result(query_results, _golden_standard, metric_name):
@@ -69,8 +118,8 @@ def regex_tokenizer(str_to_tokenize, token_pattern, to_lowercase, clean_pattern,
 		str_to_tokenize = str_to_tokenize.lower()
 	
 	str_to_tokenize = re.sub(clean_pattern, "",  str_to_tokenize).strip()
-	str_tokens = set(re.split(token_pattern,str_to_tokenize))
-	str_tokens = str_tokens - stoplist	
+	str_tokens = [i for i in re.split(token_pattern,str_to_tokenize) if i not in stoplist]
+	
 	if stemmer != None:
 		str_tokens = list(map(stemmer.stem,str_tokens))
 	return list(str_tokens)

@@ -1,5 +1,5 @@
 import time, os, re 
-from utils import folder_reader, lookup
+from utils import folder_reader, lookup, retrieve_top_k
 from utils import word_tokenizer, default_subquery_extractor, default_query_expansion
 
 #_dataset_path = "../../../datasets/spa/corpus-20090418"
@@ -24,6 +24,11 @@ _golden_standard = []
 '''
 def read_documents():
 	global _tn_to_queue
+	global _queue
+	global _golden_standard
+	_queue = []
+	_golden_standard = []
+	
 	folder_to_read  = "/".join([_dataset_path,"source", ])
 	_tn_to_queue = os.listdir(folder_to_read)
 	index_time, _queue = folder_reader(folder_to_read)
@@ -34,8 +39,15 @@ def preprocess(to_prep, _tokenizer = word_tokenizer):
 	to_prep = _tokenizer(to_prep)
 	return time.time() - start_time, to_prep
 	
-def express_as(to_express):
-	return 0, to_express
+def express_as(to_express,ir_model):
+	if ir_model == "boolean":
+		start_time = time.time()	
+		to_express = list(set(to_express))
+		return time.time() - start_time, to_express
+	elif ir_model == "VSM":
+		return 0, to_express
+	else:
+		raise NotImplementedError	
 	
 def _index(to_index):
 	start_time = time.time()	
@@ -65,12 +77,11 @@ def extract_query(to_extract,sq_extractor=default_subquery_extractor, q_expansio
 	
 	return time.time() - start_time, squeries
 
-def _search(to_search):
-	return lookup(to_search, _queue)
+def _search(to_search,how_search):
+	return lookup(to_search, _queue,how_search)
 
-def rank_results(to_rank):
-	return to_rank
-
+def rank_results(query, to_rank, ir_model, k = None):
+	return retrieve_top_k(query, to_rank, ir_model, k, _queue)
 
 
 '''
